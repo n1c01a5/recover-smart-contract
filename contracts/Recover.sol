@@ -578,8 +578,6 @@ contract Recover is Initializable, NativeMetaTransaction, ChainConstants, Contex
      *  @param _claimID The index of the claim.
      */
     event ItemClaimed(uint indexed _itemID, address indexed _finder, uint _claimID);
-    
-    bytes32 public constant DEPOSITOR_ROLE = keccak256("DEPOSITOR_ROLE");
 
     // **************************** //
     // *    Contract functions    * //
