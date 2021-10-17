@@ -553,7 +553,8 @@ contract Recover is Initializable, NativeMetaTransaction, ChainConstants, Contex
     // *        Modifiers         * //
     // **************************** //
 
-    modifier onlyGovernor {require(msg.sender == governor, "The caller must be the governor."); _;}
+    // The caller must be the governor.
+    modifier onlyGovernor {require(msg.sender == governor); _;}
 
     // **************************** //
     // *          Events          * //
@@ -678,7 +679,8 @@ contract Recover is Initializable, NativeMetaTransaction, ChainConstants, Contex
     ) public {
         Item storage item = items[_itemID];
 
-        require(_msgSender() == item.owner, "Must be the owner of the item.");
+        // Must be the owner of the item.
+        require(_msgSender() == item.owner);
 
         item.addressForEncryption = _addressForEncryption;
         item.descriptionEncryptedLink = _descriptionEncryptedLink;
@@ -691,7 +693,8 @@ contract Recover is Initializable, NativeMetaTransaction, ChainConstants, Contex
     function changeRewardAmount(uint _itemID, uint _rewardAmount) public {
         Item storage item = items[_itemID];
 
-        require(_msgSender() == item.owner, "Must be the owner of the item.");
+        // Must be the owner of the item.
+        require(_msgSender() == item.owner);
 
         item.rewardAmount = _rewardAmount;
     }
@@ -703,8 +706,10 @@ contract Recover is Initializable, NativeMetaTransaction, ChainConstants, Contex
     function changeTimeoutLocked(uint _itemID, uint _timeoutLocked) public {
         Item storage item = items[_itemID];
 
-        require(_msgSender() == item.owner, "Must be the owner of the item.");
-        require(item.timeoutLocked < _timeoutLocked, "Must be higher than the actual locked time.");
+        // Must be the owner of the item.
+        require(_msgSender() == item.owner);
+        // Must be higher than the actual locked time.
+        require(item.timeoutLocked < _timeoutLocked);
 
         item.timeoutLocked = _timeoutLocked;
     }
@@ -721,10 +726,8 @@ contract Recover is Initializable, NativeMetaTransaction, ChainConstants, Contex
     ) public {
         Item storage item = items[_itemID];
 
-        require(
-            _msgSender() == item.addressForEncryption,
-            "Must be the same sender of the transaction than the address used to encrypt the message."
-        );
+        // Must be the same sender of the transaction than the address used to encrypt the message.
+        require(_msgSender() == item.addressForEncryption);
 
         claims.push(Claim({
             itemID: _itemID, // The index of the item.
@@ -751,8 +754,10 @@ contract Recover is Initializable, NativeMetaTransaction, ChainConstants, Contex
         Claim storage itemClaim = claims[_claimID];
         Item storage item = items[itemClaim.itemID];
 
-        require(item.owner == _msgSender(), "The sender of the transaction must be the owner of the item.");
-        require(item.rewardAmount <= msg.value, "The ETH amount must be equal or higher than the reward");
+        // The sender of the transaction must be the owner of the item.
+        require(item.owner == _msgSender());
+        // The ETH amount must be equal or higher than the reward
+        require(item.rewardAmount <= msg.value);
 
         itemClaim.amountLocked += msg.value; // Locked the fund in this contract.
         itemClaim.isAccepted = true; // Set the claim as accepted.
@@ -766,12 +771,12 @@ contract Recover is Initializable, NativeMetaTransaction, ChainConstants, Contex
         Claim storage itemClaim = claims[_claimID];
         Item storage item = items[itemClaim.itemID];
 
-        require(item.owner == _msgSender(), "The caller must be the owner of the item.");
-        require(itemClaim.status == Status.NoDispute, "The transaction of the item can't be disputed.");
-        require(
-            _amount <= itemClaim.amountLocked,
-            "The amount paid has to be less than or equal to the amount locked."
-        );
+        // The caller must be the owner of the item.
+        require(item.owner == _msgSender());
+        // The transaction of the item can't be disputed.
+        require(itemClaim.status == Status.NoDispute);
+        // The amount paid has to be less than or equal to the amount locked.
+        require(_amount <= itemClaim.amountLocked);
         
         address payable finder = payable(itemClaim.finder);
 
@@ -789,12 +794,12 @@ contract Recover is Initializable, NativeMetaTransaction, ChainConstants, Contex
         Claim storage itemClaim = claims[_claimID];
         Item storage item = items[itemClaim.itemID];
 
-        require(itemClaim.finder == _msgSender(), "The caller must be the finder of the item.");
-        require(itemClaim.status == Status.NoDispute, "The transaction item can't be disputed.");
-        require(
-            _amountReimbursed <= itemClaim.amountLocked,
-            "The amount paid has to be less than or equal to the amount locked."
-        );
+        // The caller must be the finder of the item.
+        require(itemClaim.finder == _msgSender());
+        // The transaction item can't be disputed.
+        require(itemClaim.status == Status.NoDispute);
+        // The amount paid has to be less than or equal to the amount locked.
+        require(_amountReimbursed <= itemClaim.amountLocked);
         
         address payable owner = payable(item.owner);
 
@@ -812,8 +817,10 @@ contract Recover is Initializable, NativeMetaTransaction, ChainConstants, Contex
         Claim storage itemClaim = claims[_claimID];
         Item storage item = items[itemClaim.itemID];
 
-        require(block.timestamp - itemClaim.lastInteraction >= item.timeoutLocked, "The timeout has not passed yet.");
-        require(itemClaim.status == Status.NoDispute, "The transaction of the claim item can't be disputed.");
+        // The timeout has not passed yet.
+        require(block.timestamp - itemClaim.lastInteraction >= item.timeoutLocked);
+        // The transaction of the claim item can't be disputed.
+        require(itemClaim.status == Status.NoDispute);
         
         address payable finder = payable(itemClaim.finder);
 
@@ -840,17 +847,17 @@ contract Recover is Initializable, NativeMetaTransaction, ChainConstants, Contex
 
         uint arbitrationCost = arbitrator.arbitrationCost(arbitratorExtraData);
 
-        require(
-            itemClaim.status < Status.DisputeCreated,
-            "Dispute has already been created or because the transaction of the item has been executed."
-        );
-        require(item.owner == _msgSender(), "The caller must be the owner of the item.");
-        require(true == itemClaim.isAccepted, "The claim of the item must be accepted.");
+        // Dispute has already been created or because the transaction of the item has been executed.
+        require(itemClaim.status < Status.DisputeCreated);
+        // The caller must be the owner of the item.
+        require(item.owner == _msgSender());
+        // The claim of the item must be accepted.
+        require(true == itemClaim.isAccepted);
 
         item.ownerFee += msg.value;
 
         // Require that the total paid to be at least the arbitration cost.
-        require(item.ownerFee >= arbitrationCost, "The owner fee must cover arbitration costs.");
+        require(item.ownerFee >= arbitrationCost);
 
         itemClaim.lastInteraction = block.timestamp;
 
@@ -873,17 +880,18 @@ contract Recover is Initializable, NativeMetaTransaction, ChainConstants, Contex
 
         uint arbitrationCost = arbitrator.arbitrationCost(arbitratorExtraData);
 
+        // Dispute has already been created or because the transaction has been executed.
         require(
-            itemClaim.status < Status.DisputeCreated,
-            "Dispute has already been created or because the transaction has been executed."
-        );
-        require(itemClaim.finder == _msgSender(), "The caller must be the sender.");
-        require(true == itemClaim.isAccepted, "The claim of the item must be accepted.");
+            itemClaim.status < Status.DisputeCreated);
+        // The caller must be the sender.
+        require(itemClaim.finder == _msgSender());
+        // The claim of the item must be accepted.
+        require(true == itemClaim.isAccepted);
 
         itemClaim.finderFee += msg.value;
 
         // Require that the total pay at least the arbitration cost.
-        require(itemClaim.finderFee >= arbitrationCost, "The finder fee must cover arbitration costs.");
+        require(itemClaim.finderFee >= arbitrationCost);
 
         itemClaim.lastInteraction = block.timestamp;
 
